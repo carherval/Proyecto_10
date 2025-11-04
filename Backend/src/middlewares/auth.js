@@ -28,15 +28,17 @@ const isAuthorizedUser =
         throw new Error(validation.getLoginMsg(ROLES.admin))
       }
 
-      next()
+      return next()
     } catch (error) {
       if (isRequiredLogin) {
         error.message = `${validation.ENDPOINT_ACCESS_ERROR_MSG}:${validation.LINE_BREAK}${error.message}`
         error.status = 401
-        next(error)
+
+        return next(error)
       } else {
         req.user = null
-        next()
+
+        return next()
       }
     }
   }

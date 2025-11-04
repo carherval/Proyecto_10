@@ -106,7 +106,7 @@ eventSchema.pre('validate', function (next) {
     this.description = validation.normalizeString(this.description)
   }
 
-  next()
+  return next()
 })
 
 eventSchema.post('validate', function () {

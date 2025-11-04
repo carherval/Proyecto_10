@@ -7,20 +7,18 @@ const isValidSize = (req, res, next) => {
 
   const contentLength = req.headers['content-length']
 
-  if (
-    contentLength != null &&
+  const { getError } = require('../utils/error')
+  const { validation } = require('../utils/validation')
+
+  return contentLength != null &&
     parseInt(contentLength, 10) > MAX_SIZE * 1024 * 1204
-  ) {
-    const { validation } = require('../utils/validation')
-
-    return res
-      .status(413)
-      .send(
-        `Se ha producido un error al subir el archivo a "Cloudinary":${validation.LINE_BREAK}El tamaño no debe ser superior a ${MAX_SIZE} MB`
+    ? next(
+        getError(
+          `Se ha producido un error al subir el archivo a "Cloudinary":${validation.LINE_BREAK}El tamaño no debe ser superior a ${MAX_SIZE} MB`,
+          413
+        )
       )
-  }
-
-  next()
+    : next()
 }
 
 const storageConfig = (folderName) =>

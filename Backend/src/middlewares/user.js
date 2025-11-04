@@ -2,6 +2,7 @@ const USER_FOLDER_NAME = 'Meetings/Users'
 
 const multer = require('multer')
 const { storageConfig } = require('./file')
+const { getError } = require('../utils/error')
 const { validation } = require('../utils/validation')
 
 const uploadUser = (req, res, next) =>
@@ -9,32 +10,29 @@ const uploadUser = (req, res, next) =>
   multer({ storage: storageConfig(USER_FOLDER_NAME) }).single('avatar')(
     req,
     res,
-    (error) => {
-      if (error != null || (req.file != null && req.file.path == null)) {
-        return res
-          .status(400)
-          .send(
-            `Se ha producido un error al subir el avatar del usuario a "Cloudinary"${
-              error != null ? ':' + validation.LINE_BREAK + error.message : ''
-            }`
+    (error) =>
+      error != null || (req.file != null && req.file.path == null)
+        ? next(
+            getError(
+              `Se ha producido un error al subir el avatar del usuario a "Cloudinary"${
+                error != null ? ':' + validation.LINE_BREAK + error.message : ''
+              }`,
+              400
+            )
           )
-      }
-
-      next()
-    }
+        : next()
   )
 
 const uploadNoAvatarUser = (req, res, next) =>
-  multer().none()(req, res, (error) => {
-    if (error != null) {
-      return res
-        .status(400)
-        .send(
-          `Se ha producido un error al subir el usuario:${validation.LINE_BREAK}${error.message}`
+  multer().none()(req, res, (error) =>
+    error != null
+      ? next(
+          getError(
+            `Se ha producido un error al subir el usuario:${validation.LINE_BREAK}${error.message}`,
+            400
+          )
         )
-    }
-
-    next()
-  })
+      : next()
+  )
 
 module.exports = { uploadUser, uploadNoAvatarUser }

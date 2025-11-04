@@ -10,7 +10,7 @@ const fileExistsInCloudinary = async (publicId) => {
     await cloudinary.api.resource(publicId)
 
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }

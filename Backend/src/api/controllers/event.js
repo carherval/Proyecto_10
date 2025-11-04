@@ -1,9 +1,16 @@
 const mongoose = require('mongoose')
 const { Event } = require('../models/event')
 const { ROLES } = require('../models/user')
+const { getError } = require('../../utils/error')
 const { validation } = require('../../utils/validation')
 const moment = require('moment')
 const { deleteFile } = require('../../utils/file')
+
+const getUpdatedAttendeesMsg = () =>
+  'Asistentes al evento actualizados correctamente'
+
+const getAttendeeUpdateErrorMsg = () =>
+  'Se ha producido un error al actualizar los asistentes al evento'
 
 const getEventWithSortedUsers = (req, event) => {
   if (event != null) {
@@ -17,20 +24,14 @@ const getEventWithSortedUsers = (req, event) => {
     if (
       req.user == null ||
       (req.user.role === ROLES.user &&
-        !event.users.map((user) => user.userName).includes(req.user.userName))
+        !event.users.some((user) => user.username === req.user.username))
     ) {
       delete event.users
-    } else {
-      event.users = event.users.map(
-        (user) => `${user.surnames}, ${user.name} (${user.userName})`
-      )
     }
 
     // El autor de un evento sólo puede ser visualizado por un usuario "admin"
     if (req.user == null || req.user.role === ROLES.user) {
       delete event.author
-    } else {
-      event.author = event.author.userName
     }
   }
 
@@ -48,19 +49,21 @@ const getAllEvents = async (req, res, next) => {
     const events = getEventsWithSortedUsers(
       req,
       await Event.find()
-        .populate('users', '-_id surnames name userName')
-        .populate('author', '-_id userName')
+        .populate('users', 'surnames name username')
+        .populate('author', 'username role')
     ).sort((event1, event2) =>
       validation.sortEvents(event1, event2, field, order)
     )
 
-    return events.length > 0
-      ? res.status(200).send(events)
-      : res.status(404).send('No se han encontrado eventos')
+    return res.status(200).json({
+      msg: events.length === 0 ? 'No se han encontrado eventos' : undefined,
+      data: events
+    })
   } catch (error) {
     error.message = `Se ha producido un error al consultar los eventos:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -75,17 +78,18 @@ const getEventById = async (req, res, next) => {
     const event = getEventWithSortedUsers(
       req,
       await Event.findById(id)
-        .populate('users', '-_id surnames name userName')
-        .populate('author', '-_id userName')
+        .populate('users', 'surnames name username')
+        .populate('author', 'username role')
     )
 
     return event != null
-      ? res.status(200).send(event)
-      : res.status(404).send(validation.getEventNotFoundByIdMsg(id))
+      ? res.status(200).json({ data: event })
+      : next(getError(validation.getEventNotFoundByIdMsg(id), 404))
   } catch (error) {
     error.message = `Se ha producido un error al consultar el evento:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -100,27 +104,28 @@ const getEventsByTitle = async (req, res, next) => {
     const events = getEventsWithSortedUsers(
       req,
       await Event.find({ title })
-        .populate('users', '-_id surnames name userName')
-        .populate('author', '-_id userName')
+        .populate('users', 'surnames name username')
+        .populate('author', 'username role')
     ).sort((event1, event2) =>
       validation.sortEvents(event1, event2, field, order)
     )
 
-    return events.length > 0
-      ? res.status(200).send(events)
-      : res
-          .status(404)
-          .send(
-            `No se han encontrado eventos cuyo título contenga "${validation.normalizeSearchString(
+    return res.status(200).json({
+      msg:
+        events.length === 0
+          ? `No se han encontrado eventos cuyo título contenga "${validation.normalizeSearchString(
               title
             )}"`
-          )
+          : undefined,
+      data: events
+    })
   } catch (error) {
     error.message = `Se ha producido un error al consultar los eventos cuyo título contenga "${validation.normalizeSearchString(
       title
     )}":${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -134,26 +139,38 @@ const getEventsByUserId = async (req, res, next) => {
       throw new Error(validation.INVALID_ID_MSG)
     }
 
+    if (req.user.role === ROLES.user && req.user._id.toString() !== id) {
+      return next(
+        getError(
+          validation.getNotAllowedActionMsg(
+            'Si no eres un usuario "admin" sólo puedes consultar tus propios eventos'
+          ),
+          403
+        )
+      )
+    }
+
     const events = getEventsWithSortedUsers(
       req,
       await Event.find({ users: { $in: id } })
-        .populate('users', '-_id surnames name userName')
-        .populate('author', '-_id userName')
+        .populate('users', 'surnames name username')
+        .populate('author', 'username role')
     ).sort((event1, event2) =>
       validation.sortEvents(event1, event2, field, order)
     )
 
-    return events.length > 0
-      ? res.status(200).send(events)
-      : res
-          .status(404)
-          .send(
-            `No se han encontrado eventos con el identificador "${id}" en alguno de sus usuarios`
-          )
+    return res.status(200).json({
+      msg:
+        events.length === 0
+          ? `No se han encontrado eventos con el identificador "${id}" en alguno de sus usuarios`
+          : undefined,
+      data: events
+    })
   } catch (error) {
     error.message = `Se ha producido un error al consultar los eventos con el identificador "${id}" en alguno de sus usuarios:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -169,14 +186,15 @@ const createEvent = async (req, res, next) => {
     req.body.author = req.user._id
 
     // Sólo se permite la población de campos en funciones de búsqueda
-    return res.status(201).send(
-      getEventWithSortedUsers(
+    return res.status(201).json({
+      msg: 'Evento creado correctamente',
+      data: getEventWithSortedUsers(
         req,
         await Event.findById((await new Event(req.body).save())._id)
-          .populate('users', '-_id surnames name userName')
-          .populate('author', '-_id userName')
+          .populate('users', 'surnames name username')
+          .populate('author', 'username role')
       )
-    )
+    })
   } catch (error) {
     const msg = 'Se ha producido un error al crear el evento'
 
@@ -188,7 +206,8 @@ const createEvent = async (req, res, next) => {
       error.message
     )}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -204,7 +223,7 @@ const updateEventById = async (req, res, next) => {
     const event = await Event.findById(id)
 
     if (event == null) {
-      return res.status(404).send(validation.getEventNotFoundByIdMsg(id))
+      return next(getError(validation.getEventNotFoundByIdMsg(id), 404))
     }
 
     if (Object.keys(req.body).length === 0 && req.file == null) {
@@ -242,14 +261,15 @@ const updateEventById = async (req, res, next) => {
     updatedEvent.description = description ?? updatedEvent.description
 
     // Sólo se permite la población de campos en funciones de búsqueda
-    return res.status(201).send(
-      getEventWithSortedUsers(
+    return res.status(201).json({
+      msg: 'Evento actualizado correctamente',
+      data: getEventWithSortedUsers(
         req,
         await Event.findById((await updatedEvent.save())._id)
-          .populate('users', '-_id surnames name userName')
-          .populate('author', '-_id userName')
+          .populate('users', 'surnames name username')
+          .populate('author', 'username role')
       )
-    )
+    })
   } catch (error) {
     const msg = 'Se ha producido un error al actualizar el evento'
 
@@ -261,7 +281,8 @@ const updateEventById = async (req, res, next) => {
       error.message
     )}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -276,26 +297,28 @@ const attendEventById = async (req, res, next) => {
     const event = await Event.findById(id)
 
     if (event == null) {
-      return res.status(404).send(validation.getEventNotFoundByIdMsg(id))
+      return next(getError(validation.getEventNotFoundByIdMsg(id), 404))
     }
 
     event.users.push(req.user._id)
 
     // Sólo se permite la población de campos en funciones de búsqueda
-    return res.status(201).send(
-      getEventWithSortedUsers(
+    return res.status(201).json({
+      msg: getUpdatedAttendeesMsg(),
+      data: getEventWithSortedUsers(
         req,
         await Event.findById((await event.save())._id)
-          .populate('users', '-_id surnames name userName')
-          .populate('author', '-_id userName')
+          .populate('users', 'surnames name username')
+          .populate('author', 'username role')
       )
-    )
+    })
   } catch (error) {
-    error.message = `Se ha producido un error al actualizar los usuarios como asistentes al evento:${
+    error.message = `${getAttendeeUpdateErrorMsg()}:${
       validation.LINE_BREAK
     }${validation.formatErrorMsg(error.message)}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -310,7 +333,7 @@ const unattendEventById = async (req, res, next) => {
     const event = await Event.findById(id)
 
     if (event == null) {
-      return res.status(404).send(validation.getEventNotFoundByIdMsg(id))
+      return next(getError(validation.getEventNotFoundByIdMsg(id), 404))
     }
 
     event.users = event.users.filter(
@@ -318,20 +341,22 @@ const unattendEventById = async (req, res, next) => {
     )
 
     // Sólo se permite la población de campos en funciones de búsqueda
-    return res.status(201).send(
-      getEventWithSortedUsers(
+    return res.status(201).json({
+      msg: getUpdatedAttendeesMsg(),
+      data: getEventWithSortedUsers(
         req,
         await Event.findById((await event.save())._id)
-          .populate('users', '-_id surnames name userName')
-          .populate('author', '-_id userName')
+          .populate('users', 'surnames name username')
+          .populate('author', 'username role')
       )
-    )
+    })
   } catch (error) {
-    error.message = `Se ha producido un error al actualizar los usuarios como asistentes al evento:${
+    error.message = `${getAttendeeUpdateErrorMsg()}:${
       validation.LINE_BREAK
     }${validation.formatErrorMsg(error.message)}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -351,24 +376,25 @@ const deleteEventById = async (req, res, next) => {
     if (event == null) {
       await session.abortTransaction()
 
-      return res.status(404).send(validation.getEventNotFoundByIdMsg(id))
+      return next(getError(validation.getEventNotFoundByIdMsg(id), 404))
     }
 
     await Event.deleteOne(event, { session })
 
-    const msg = 'Se ha eliminado el evento'
+    const msg = 'Evento eliminado correctamente'
 
     deleteFile(event.poster, msg)
 
     await session.commitTransaction()
 
-    return res.status(200).send(msg)
+    return res.status(200).json({ msg })
   } catch (error) {
     await session.abortTransaction()
 
     error.message = `Se ha producido un error al eliminar el evento:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   } finally {
     session.endSession()
   }

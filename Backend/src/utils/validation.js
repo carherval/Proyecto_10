@@ -21,9 +21,7 @@ const LINE_BREAK = '<br /><br />'
 const CONSOLE_LINE_BREAK = '\n'
 
 const getLoginMsg = (role = '') =>
-  `Se debe iniciar sesión${
-    role !== '' ? ` como "${role}"` : ''
-  } para poder acceder al "endpoint"`
+  `Debes iniciar sesión${role !== '' ? ` como "${role}"` : ''}`
 
 const getNotAllowedActionMsg = (reasonMsg) =>
   `No tienes permisos para realizar la acción solicitada: ${reasonMsg}`
@@ -110,8 +108,8 @@ const sortEvents = (event1, event2, field = 'title', order = 'asc') => {
 
 // Ordena los usuarios alfabéticamente por apellidos y nombre ignorando tildes, minúsculas y mayúsculas
 const sortUsers = (user1, user2) =>
-  `${user1.surnames}, ${user1.name}`.localeCompare(
-    `${user2.surnames}, ${user2.name}`,
+  `${user1.surnames}, ${user1.name} (${user1.username})`.localeCompare(
+    `${user2.surnames}, ${user2.name} (${user2.username})`,
     'en',
     { sensitivity: 'base' }
   )
@@ -141,8 +139,8 @@ const normalizeSearchString = (searchString) =>
   searchString.toString().slice(1).slice(0, -2).toLowerCase()
 
 // Elimina espacios, tildes y lo pasa a minúsculas
-const normalizeUserName = (userName) =>
-  userName
+const normalizeUserName = (username) =>
+  username
     .replace(/\s/g, '')
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')

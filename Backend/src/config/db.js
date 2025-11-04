@@ -22,7 +22,7 @@ const connectToDataBase = async () => {
     // await Event.syncIndexes()
 
     // // Se recrean los índices de los usuarios
-    // const { User } = require('../api/models/user)
+    // const { User } = require('../api/models/user')
 
     // for (const index of await User.collection.indexes()) {
     //   // El índice "_id_" es obligatorio

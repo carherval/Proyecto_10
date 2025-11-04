@@ -1,11 +1,14 @@
+// Minutos
+const EXPIRATION_TIME = 15
+
 const jwt = require('jsonwebtoken')
 // Se suprimen "logs" innecesarios
 require('dotenv').config({ quiet: true })
 
 // Devuelve un token generado mediante la clave secreta
-const getJwtToken = (id, userName) =>
-  jwt.sign({ id, userName }, process.env.SECRET_KEY, {
-    expiresIn: '15m'
+const getJwtToken = (id, username) =>
+  jwt.sign({ id, username }, process.env.SECRET_KEY, {
+    expiresIn: `${EXPIRATION_TIME}m`
   })
 
 // Devuelve un token decodificado validándolo mediante la clave secreta

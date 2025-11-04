@@ -18,11 +18,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: [true, validation.MANDATORY_MSG]
     },
-    userName: {
+    username: {
       type: String,
       trim: true,
       required: [true, validation.MANDATORY_MSG],
-      unique: [true, `userName: ${validation.UNIQUE_MSG}`]
+      unique: [true, `username: ${validation.UNIQUE_MSG}`]
     },
     avatar: {
       type: String,
@@ -83,15 +83,15 @@ userSchema.pre('validate', function (next) {
     this.name = validation.normalizeString(this.name)
   }
 
-  if (this.userName != null) {
-    this.userName = validation.normalizeUserName(this.userName)
+  if (this.username != null) {
+    this.username = validation.normalizeUserName(this.username)
   }
 
   if (this.role != null) {
     this.role = validation.normalizeString(this.role)
   }
 
-  next()
+  return next()
 })
 
 // Modelo, esquema y colección de los usuarios

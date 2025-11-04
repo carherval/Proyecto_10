@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const { Event } = require('../models/event')
 const { ROLES, User } = require('../models/user')
+const { getError } = require('../../utils/error')
 const { validation } = require('../../utils/validation')
 const bcrypt = require('bcrypt')
 const moment = require('moment')
@@ -16,7 +17,7 @@ const getUserWithSortedEvents = async (user) => {
     user = user.toObject()
     user.events =
       events.length > 0
-        ? events.sort(validation.sortEvents).map((event) => event.title)
+        ? events.sort(validation.sortEvents).map((event) => event._id)
         : []
     user.createdAt = moment(user.createdAt).format('DD/MM/YYYY HH:mm:ss')
     user.updatedAt = moment(user.updatedAt).format('DD/MM/YYYY HH:mm:ss')
@@ -36,43 +37,47 @@ const getAllUsers = async (req, res, next) => {
       validation.sortUsers
     )
 
-    return users.length > 0
-      ? res.status(200).send(users)
-      : res.status(404).send('No se han encontrado usuarios')
+    return res.status(200).json({
+      msg: users.length === 0 ? 'No se han encontrado usuarios' : undefined,
+      data: users
+    })
   } catch (error) {
     error.message = `Se ha producido un error al consultar los usuarios:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
 const getUserById = async (req, res, next) => {
   const { id } = req.params
 
-  if (req.user.role === ROLES.user && req.user._id.toString() !== id) {
-    return res
-      .status(403)
-      .send(
-        validation.getNotAllowedActionMsg(
-          'Si no eres un usuario "admin" sólo puedes consultar tu propio usuario'
-        )
-      )
-  }
-
   try {
     if (!mongoose.isValidObjectId(id)) {
       throw new Error(validation.INVALID_ID_MSG)
     }
 
+    if (req.user.role === ROLES.user && req.user._id.toString() !== id) {
+      return next(
+        getError(
+          validation.getNotAllowedActionMsg(
+            'Si no eres un usuario "admin" sólo puedes consultar tu propio usuario'
+          ),
+          403
+        )
+      )
+    }
+
     const user = await getUserWithSortedEvents(await User.findById(id))
 
     return user != null
-      ? res.status(200).send(user)
-      : res.status(404).send(getUserNotFoundByIdMsg(id))
+      ? res.status(200).json({ data: user })
+      : next(getError(getUserNotFoundByIdMsg(id), 404))
   } catch (error) {
     error.message = `Se ha producido un error al consultar el usuario:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -82,14 +87,14 @@ const loginUser = async (req, res, next) => {
   let user
 
   try {
-    if (req.body.userName == null) {
+    if (req.body.username == null || req.body.username.trim() === '') {
       throw new Error('Se debe introducir el usuario')
     }
-    if (req.body.password == null) {
+    if (req.body.password == null || req.body.password.trim() === '') {
       throw new Error('Se debe introducir la contraseña')
     }
 
-    user = await User.findOne({ userName: req.body.userName }).select(
+    user = await User.findOne({ username: req.body.username }).select(
       '+password'
     )
     if (user == null) {
@@ -99,14 +104,23 @@ const loginUser = async (req, res, next) => {
     const { getJwtToken } = require('../../utils/token')
 
     return bcrypt.compareSync(req.body.password, user.password)
-      ? res.status(200).json(getJwtToken(user._id, user.userName))
-      : res.status(400).send(INVALID_USER_PASSWORD_MSG)
+      ? res.status(200).json({
+          data: {
+            token: getJwtToken(user._id, user.username),
+            tokenExpiredDate: Date.now(),
+            _id: user._id,
+            name: user.name,
+            role: user.role
+          }
+        })
+      : next(getError(INVALID_USER_PASSWORD_MSG, 400))
   } catch (error) {
     error.message = `Se ha producido un error al realizar el inicio de sesión del usuario:${
       validation.LINE_BREAK
     }${validation.formatErrorMsg(error.message)}`
     error.status = 400
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -116,13 +130,14 @@ const createUser = async (req, res, next) => {
   try {
     // La acción sólo puede realizarse para registrarse el propio usuario o por un usuario "admin" para crear otro usuario
     if (req.user != null && req.user.role === ROLES.user) {
-      return res
-        .status(403)
-        .send(
+      return next(
+        getError(
           validation.getNotAllowedActionMsg(
             'Si no eres un usuario "admin" no puedes crear otros usuarios'
-          )
+          ),
+          403
         )
+      )
     }
 
     if (isUploadedFile) {
@@ -145,9 +160,10 @@ const createUser = async (req, res, next) => {
 
     req.body.role = ROLES.user
 
-    return res
-      .status(201)
-      .send(await getUserWithSortedEvents(await new User(req.body).save()))
+    return res.status(201).json({
+      msg: 'Usuario creado correctamente',
+      data: await getUserWithSortedEvents(await new User(req.body).save())
+    })
   } catch (error) {
     const msg = 'Se ha producido un error al crear el usuario'
 
@@ -159,23 +175,13 @@ const createUser = async (req, res, next) => {
       error.message
     )}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
 const updateUserById = async (req, res, next) => {
   const { id } = req.params
-
-  if (req.user.role === ROLES.user && req.user._id.toString() !== id) {
-    return res
-      .status(403)
-      .send(
-        validation.getNotAllowedActionMsg(
-          'Si no eres un usuario "admin" sólo puedes actualizar tu propio usuario'
-        )
-      )
-  }
-
   const isUploadedFile = req.file != null && req.file.path != null
 
   try {
@@ -183,16 +189,27 @@ const updateUserById = async (req, res, next) => {
       throw new Error(validation.INVALID_ID_MSG)
     }
 
+    if (req.user.role === ROLES.user && req.user._id.toString() !== id) {
+      return next(
+        getError(
+          validation.getNotAllowedActionMsg(
+            'Si no eres un usuario "admin" sólo puedes actualizar tu propio usuario'
+          ),
+          403
+        )
+      )
+    }
+
     const user = await User.findById(id).select('+password')
 
     if (user == null) {
-      return res.status(404).send(getUserNotFoundByIdMsg(id))
+      return next(getError(getUserNotFoundByIdMsg(id), 404))
     }
 
     if (user.role === ROLES.superadmin) {
-      return res
-        .status(403)
-        .send(`El usuario "${ROLES.superadmin}" no se puede actualizar`)
+      return next(
+        getError(`El usuario "${ROLES.superadmin}" no se puede actualizar`, 403)
+      )
     }
 
     if (Object.keys(req.body).length === 0 && req.file == null) {
@@ -218,7 +235,7 @@ const updateUserById = async (req, res, next) => {
     }
 
     // Se sustituye la información del usuario a actualizar por la introducida por el usuario
-    const { surnames, name, userName, avatar, password, email, role } = req.body
+    const { surnames, name, username, avatar, password, email, role } = req.body
 
     // Se valida aquí y no en el "validate" del modelo porque, si no, en el modelo se validaría el "hash" del cifrado de la contraseña, no la contraseña
     if (password != null && !validation.isPassword(password)) {
@@ -227,7 +244,7 @@ const updateUserById = async (req, res, next) => {
 
     updatedUser.surnames = surnames ?? updatedUser.surnames
     updatedUser.name = name ?? updatedUser.name
-    updatedUser.userName = userName ?? updatedUser.userName
+    updatedUser.username = username ?? updatedUser.username
     updatedUser.avatar = isUploadedFile
       ? req.file.path
       : avatar ?? updatedUser.avatar
@@ -242,9 +259,10 @@ const updateUserById = async (req, res, next) => {
       updatedUser.role = role
     }
 
-    return res
-      .status(201)
-      .send(await getUserWithSortedEvents(await updatedUser.save()))
+    return res.status(201).json({
+      msg: 'Usuario actualizado correctamente',
+      data: await getUserWithSortedEvents(await updatedUser.save())
+    })
   } catch (error) {
     const msg = 'Se ha producido un error al actualizar el usuario'
 
@@ -256,7 +274,8 @@ const updateUserById = async (req, res, next) => {
       error.message
     )}`
     error.status = 500
-    next(error)
+
+    return next(error)
   }
 }
 
@@ -264,13 +283,14 @@ const deleteUserById = async (req, res, next) => {
   const { id } = req.params
 
   if (req.user._id.toString() === id) {
-    return res
-      .status(403)
-      .send(
+    return next(
+      getError(
         validation.getNotAllowedActionMsg(
           'Un usuario no se puede eliminar a sí mismo'
-        )
+        ),
+        403
       )
+    )
   }
 
   const session = await mongoose.startSession()
@@ -287,15 +307,15 @@ const deleteUserById = async (req, res, next) => {
     if (user == null) {
       await session.abortTransaction()
 
-      return res.status(404).send(getUserNotFoundByIdMsg(id))
+      return next(getError(getUserNotFoundByIdMsg(id), 404))
     }
 
     if (user.role === ROLES.superadmin) {
       await session.abortTransaction()
 
-      return res
-        .status(403)
-        .send(`El usuario "${ROLES.superadmin}" no se puede eliminar`)
+      return next(
+        getError(`El usuario "${ROLES.superadmin}" no se puede eliminar`, 403)
+      )
     }
 
     await User.deleteOne(user, { session })
@@ -305,7 +325,7 @@ const deleteUserById = async (req, res, next) => {
     })
     const deletedUserFromEventMsg =
       (await Event.find({ users: { $in: id } })).length > 0
-        ? `${validation.LINE_BREAK}Se ha eliminado el usuario de la lista de usuarios de los eventos`
+        ? `${validation.LINE_BREAK}Se ha eliminado el usuario como asistente a los eventos`
         : ''
     const deletedAuthorUserMsg =
       (await Event.find({ author: { $in: id } })).length > 0
@@ -325,11 +345,11 @@ const deleteUserById = async (req, res, next) => {
       }
     } catch (error) {
       throw new Error(
-        `Se ha producido un error al eliminar el usuario de la lista de usuarios de los eventos o como autor de sus eventos:${validation.LINE_BREAK}${error.message}`
+        `Se ha producido un error al eliminar el usuario como asistente a los eventos o como autor de sus eventos:${validation.LINE_BREAK}${error.message}`
       )
     }
 
-    const msg = 'Se ha eliminado el usuario'
+    const msg = 'Usuario eliminado correctamente'
 
     deleteFile(user.avatar, msg)
 
@@ -337,13 +357,14 @@ const deleteUserById = async (req, res, next) => {
 
     return res
       .status(200)
-      .send(msg + deletedUserFromEventMsg + deletedAuthorUserMsg)
+      .json({ msg: msg + deletedUserFromEventMsg + deletedAuthorUserMsg })
   } catch (error) {
     await session.abortTransaction()
 
     error.message = `Se ha producido un error al eliminar el usuario:${validation.LINE_BREAK}${error.message}`
     error.status = 500
-    next(error)
+
+    return next(error)
   } finally {
     session.endSession()
   }

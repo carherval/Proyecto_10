@@ -29,7 +29,7 @@ eventRouter.get(
 
 eventRouter.get(
   '/get/user-id/:id',
-  isAuthorizedUser({ role: ROLES.admin }),
+  isAuthorizedUser(),
   eventController.getEventsByUserId
 )
 
