@@ -1,0 +1,89 @@
+/* Campos de texto */
+
+.txt-fld {
+  border: solid 0.25rem var(--blue1-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  font-size: 1.75rem;
+  background-color: var(--white-color);
+}
+
+.txt-fld::placeholder {
+  color: var(--blue1-color);
+}
+
+/* Áreas de texto */
+
+.txt-area-fld {
+  height: 20rem;
+  border: solid 0.25rem var(--blue1-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  font-size: 1.75rem;
+  background-color: var(--white-color);
+}
+
+.txt-area-fld::placeholder {
+  color: var(--blue1-color);
+}
+
+/* Desplegables */
+
+.slct-fld {
+  border: solid 0.25rem var(--blue1-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  font-size: 1.75rem;
+  background-color: var(--white-color);
+}
+
+.slct-fld:hover {
+  cursor: pointer;
+}
+
+.slct-fld option {
+  background-color: var(--white-color);
+}
+
+/* Archivos */
+
+.file-fld span {
+  font-size: 1.75rem;
+  color: var(--white-color);
+}
+
+/* Botones */
+
+.btn {
+  border: var(--black-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  font-size: 1.75rem;
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+  cursor: pointer;
+}
+
+.btn:hover {
+  cursor: pointer;
+}
+
+.btn:active {
+  box-shadow: 5px 5px 10px var(--black-color);
+}
+
+/* Enlaces en forma de botón */
+
+.btn-lnk {
+  border: var(--black-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  font-size: 1.75rem;
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+  cursor: pointer;
+}
+
+.btn-lnk:active {
+  box-shadow: 5px 5px 10px var(--black-color);
+}

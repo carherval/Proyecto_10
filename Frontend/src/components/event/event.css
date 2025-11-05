@@ -1,0 +1,108 @@
+.event {
+  /* Estilos responsive */
+  flex-direction: column;
+  gap: 0;
+}
+
+.event > * {
+  width: 100%;
+}
+
+/* Título desplegable del evento */
+
+.event h3 {
+  padding: 2rem;
+  padding-right: 4rem;
+  font-size: 1.75rem;
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+  position: relative;
+  cursor: pointer;
+}
+
+.event h3::after {
+  content: '〉';
+  position: absolute;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%) rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.event h3.opened::after {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+/* Desplegable oculto del evento */
+.event > div {
+  border-left: var(--blue1-border);
+  border-right: var(--blue1-border);
+  border-bottom: var(--blue1-border);
+  padding: 2rem;
+  background-color: var(--white-color);
+  /* Estilos responsive */
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.event .content {
+  width: 100%;
+  background-color: var(--white-color);
+  /* Estilos responsive */
+  align-items: start;
+}
+
+.event .content * {
+  background-color: var(--white-color);
+}
+
+/* Cartel del evento */
+
+.event .poster {
+  width: 25%;
+}
+.event .poster > img {
+  width: 100%;
+}
+
+/* Información del evento */
+
+.event .info {
+  width: 100%;
+  /* Estilos responsive */
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.event .info * {
+  background-color: var(--white-color);
+}
+
+.event .info .field {
+  width: 100%;
+  /* Estilos responsive */
+  align-items: start;
+}
+
+.event .info .label {
+  width: 25%;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: var(--blue1-color);
+  /* Estilos responsive */
+  justify-content: left;
+  text-align: left;
+}
+
+.event .info .value {
+  width: 75%;
+  font-size: 1.75rem;
+  color: var(--blue1-color);
+  /* Estilos responsive */
+  justify-content: left;
+  text-align: left;
+}
+
+.event .buttons {
+  background-color: var(--white-color);
+}

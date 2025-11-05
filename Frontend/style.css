@@ -1,0 +1,388 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+
+:root {
+  --black-color: rgb(0, 0, 0);
+  --white-color: rgb(255, 255, 255);
+  --blue1-color: rgb(47, 85, 151);
+  --blue2-color: rgb(107, 155, 193);
+  --yellow-color: rgb(255, 155, 0);
+  --red-color: rgb(139, 0, 0);
+  --white-transparency: rgba(255, 255, 255, 0.5);
+  --black-border: 0.25rem solid var(--black-color);
+  --white-border: 0.5rem solid var(--white-color);
+  --blue1-border: 0.5rem solid var(--blue1-color);
+}
+
+/* Anchuras y tamaño de la fuente */
+
+@media screen and (max-width: 425px) {
+  :root {
+    --passw-width: 50%;
+    --button-width: 40%;
+    --form-width: 60%;
+    --info-width: 80%;
+    font-size: 6px;
+  }
+}
+
+@media screen and (min-width: 426px) and (max-width: 768px) {
+  :root {
+    --passw-width: 40%;
+    --button-width: 35%;
+    --form-width: 50%;
+    --info-width: 70%;
+    font-size: 9px;
+  }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --passw-width: 30%;
+    --button-width: 30%;
+    --form-width: 40%;
+    --info-width: 60%;
+    font-size: 9px;
+  }
+}
+
+@media screen and (min-width: 1025px) and (max-width: 1440px) {
+  :root {
+    --passw-width: 20%;
+    --button-width: 25%;
+    --form-width: 30%;
+    --info-width: 50%;
+    font-size: 9px;
+  }
+}
+
+@media screen and (min-width: 1441px) and (max-width: 2559px) {
+  :root {
+    --passw-width: 20%;
+    --button-width: 25%;
+    --form-width: 30%;
+    --info-width: 50%;
+    font-size: 12px;
+  }
+}
+
+@media screen and (min-width: 2560px) {
+  :root {
+    --passw-width: 10%;
+    --button-width: 10%;
+    --form-width: 20%;
+    --info-width: 30%;
+    font-size: 9px;
+  }
+}
+
+/* Estilos generales iniciales */
+* {
+  margin: 0;
+  border: none;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5rem;
+  color: var(--black-color);
+  background-color: var(--blue2-color);
+}
+
+/* Estilos responsive iniciales */
+.flex {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 2rem;
+}
+
+/* Estilos generales */
+
+.oculto {
+  display: none;
+}
+
+.negrita {
+  font-weight: bold;
+}
+
+.required {
+  color: var(--red-color);
+  font-size: 1.75rem;
+}
+
+.required-note {
+  font-size: 1.75rem;
+  color: var(--white-color);
+}
+
+.msg {
+  width: var(--info-width);
+  border: var(--blue1-border);
+  padding: 2rem;
+  font-size: 1.75rem;
+  color: var(--blue1-color);
+  background-color: var(--white-color);
+}
+
+/* Anchura mínima */
+body {
+  min-width: 426px;
+}
+
+h1 {
+  font-size: 3.5rem;
+  color: var(--white-color);
+}
+
+h2 {
+  font-size: 2.5rem;
+  color: var(--white-color);
+}
+
+h3 {
+  font-size: 2rem;
+  color: var(--white-color);
+}
+
+li {
+  list-style-type: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+main {
+  margin-top: 12.5rem;
+  padding: 2rem;
+}
+
+main * {
+  background-color: var(--blue2-color);
+}
+
+/* Página de login */
+
+.login {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.login form[name='login'] {
+  width: var(--passw-width);
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.login form[name='login'] * {
+  width: 100%;
+  /* Estilos responsive */
+  text-align: left;
+}
+
+/* Página de eventos */
+
+.events {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.events > a {
+  width: var(--button-width);
+}
+
+.events form[name='filter'] {
+  width: var(--info-width);
+  /* Estilos responsive */
+  justify-content: space-between;
+}
+
+@media screen and (max-width: 1024px) {
+  .events form[name='filter'] {
+    /* Estilos responsive */
+    flex-wrap: wrap;
+  }
+
+  .events form[name='filter'] input {
+    width: 100%;
+  }
+
+  .events form[name='filter'] select {
+    width: 30%;
+  }
+
+  .events form[name='filter'] button {
+    width: 30%;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .events form[name='filter'] input {
+    width: 55%;
+  }
+
+  .events form[name='filter'] select {
+    width: 25%;
+  }
+
+  .events form[name='filter'] button {
+    width: 15%;
+  }
+}
+
+.events #content {
+  width: 100%;
+}
+
+.events #content ul {
+  width: var(--info-width);
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.events #content li {
+  width: 100%;
+}
+
+/* Página de creación y actualización de eventos */
+
+.create-event,
+.update-event {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.create-event form[name='create'],
+.update-event form[name='update'] {
+  width: var(--form-width);
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.create-event form[name='create'] *,
+.update-event form[name='update'] * {
+  width: 100%;
+  /* Estilos responsive */
+  text-align: left;
+}
+
+.create-event form[name='create'] > div,
+.update-event form[name='update'] > div {
+  /* Estilos responsive */
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.create-event form[name='create'] label,
+.update-event form[name='update'] label {
+  font-size: 1.75rem;
+  color: var(--white-color);
+}
+
+.create-event form[name='create'] button,
+.update-event form[name='update'] button {
+  width: 50%;
+}
+
+/* Página de usuarios */
+
+.users {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.users > a {
+  width: var(--button-width);
+}
+
+.users #content {
+  width: 100%;
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.users #content ul {
+  width: var(--info-width);
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.users #content li {
+  width: 100%;
+}
+
+/* Página de perfil de usuario */
+
+.profile {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.profile #content {
+  width: 100%;
+}
+
+.profile .user {
+  width: var(--info-width);
+}
+
+/* Página de creación y actualización de usuarios */
+
+.create-user,
+.update-data-user {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.create-user form[name='create'],
+.update-data-user form[name='update-data'] {
+  width: var(--form-width);
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.create-user form[name='create'] *,
+.update-data-user form[name='update-data'] * {
+  width: 100%;
+  /* Estilos responsive */
+  text-align: left;
+}
+
+.create-user form[name='create'] > div,
+.update-data-user form[name='update-data'] > div {
+  /* Estilos responsive */
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.create-user form[name='create'] label,
+.update-data-user form[name='update-data'] label {
+  font-size: 1.75rem;
+  color: var(--white-color);
+}
+
+.create-user form[name='create'] button,
+.update-data-user form[name='update-data'] button {
+  width: 50%;
+}
+
+/* Página de actualización de contraseña */
+
+.update-password-user {
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.update-password-user form[name='update-password'] {
+  width: var(--passw-width);
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.update-password-user form[name='update-password'] * {
+  width: 100%;
+  /* Estilos responsive */
+  text-align: left;
+}

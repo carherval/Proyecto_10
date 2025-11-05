@@ -1,0 +1,48 @@
+.header {
+  width: 100%;
+  border-bottom: var(--white-border);
+  padding: 2rem;
+  background-color: var(--blue1-color);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  /* Estilos responsive */
+  flex-direction: column;
+}
+
+.header * {
+  background-color: var(--blue1-color);
+}
+
+.header > div {
+  width: 100%;
+}
+
+/* Saludo */
+.header #greeting {
+  width: 50%;
+  color: var(--yellow-color);
+  /* Estilos responsive */
+  text-align: left;
+}
+
+/* Menú de navegación */
+
+.header nav {
+  width: 100%;
+}
+
+.header nav ul {
+  /* Estilos responsive */
+  justify-content: right;
+}
+
+.header nav a {
+  color: var(--white-color);
+}
+
+.header nav a:hover {
+  color: var(--yellow-color);
+  transition: 0.25s;
+}

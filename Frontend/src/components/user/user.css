@@ -1,0 +1,116 @@
+.user {
+  /* Estilos responsive */
+  flex-direction: column;
+  gap: 0;
+}
+
+.user > * {
+  width: 100%;
+}
+
+/* Nombre del usuario */
+.user h3 {
+  padding: 2rem;
+  font-size: 1.75rem;
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+}
+
+/* Nombre desplegable del usuario */
+
+.user h4 {
+  padding: 2rem;
+  padding-right: 4rem;
+  font-size: 1.75rem;
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+  position: relative;
+  cursor: pointer;
+}
+
+.user h4::after {
+  content: '〉';
+  position: absolute;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%) rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.user h4.opened::after {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+/* Desplegable oculto del usuario */
+.user > div {
+  border-left: var(--blue1-border);
+  border-right: var(--blue1-border);
+  border-bottom: var(--blue1-border);
+  padding: 2rem;
+  background-color: var(--white-color);
+  /* Estilos responsive */
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.user .content {
+  width: 100%;
+  background-color: var(--white-color);
+  /* Estilos responsive */
+  align-items: start;
+}
+
+.user .content * {
+  background-color: var(--white-color);
+}
+
+/* Imagen de perfil del usuario */
+
+.user .avatar {
+  width: 25%;
+}
+.user .avatar > img {
+  width: 100%;
+}
+
+/* Información del usuario */
+
+.user .info {
+  width: 100%;
+  /* Estilos responsive */
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.user .info * {
+  background-color: var(--white-color);
+}
+
+.user .info .field {
+  width: 100%;
+  /* Estilos responsive */
+  align-items: end;
+}
+
+.user .info .label {
+  width: 30%;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: var(--blue1-color);
+  /* Estilos responsive */
+  justify-content: left;
+  text-align: left;
+}
+
+.user .info .value {
+  width: 70%;
+  font-size: 1.75rem;
+  color: var(--blue1-color);
+  /* Estilos responsive */
+  justify-content: left;
+  text-align: left;
+}
+
+.user .buttons {
+  background-color: var(--white-color);
+}

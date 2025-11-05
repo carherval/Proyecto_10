@@ -1,0 +1,30 @@
+.swal2-popup {
+  width: var(--info-width);
+  border: var(--blue1-border);
+  background-color: var(--white-color);
+  position: fixed;
+  top: 15rem;
+}
+
+.swal2-title {
+  color: var(--blue1-color);
+  background-color: var(--white-color);
+}
+
+.swal2-actions {
+  background-color: var(--white-color);
+  /* Estilos responsive */
+  gap: 2rem;
+}
+
+.swal2-confirm,
+.swal2-confirm:hover {
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+}
+
+.swal2-cancel,
+.swal2-cancel:hover {
+  color: var(--white-color);
+  background-color: var(--blue1-color);
+}
