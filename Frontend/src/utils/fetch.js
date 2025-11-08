@@ -1,6 +1,7 @@
 import * as messageComp from '../components/message/message'
 import * as userComp from '../components/user/user'
 
+const API_URL = import.meta.env.VITE_API_URL
 const TRY_AGAIN_MSG = 'Inténtalo de nuevo más tarde'
 const LINE_BREAK = '<br /><br />'
 
@@ -25,7 +26,7 @@ const MESSAGES = [
 
 export const getAllEvents = () =>
   getData(
-    'http://localhost:3000/event/get/all/',
+    `${API_URL}/event/get/all/`,
     userComp.getUserToken(),
     FETCH_METHODS.get,
     null
@@ -34,8 +35,8 @@ export const getAllEvents = () =>
 export const getFilteredEvents = (title, field, order) =>
   getData(
     title !== ''
-      ? `http://localhost:3000/event/get/title/${title}?field=${field}&order=${order}`
-      : `http://localhost:3000/event/get/all/?field=${field}&order=${order}`,
+      ? `${API_URL}/event/get/title/${title}?field=${field}&order=${order}`
+      : `${API_URL}/event/get/all/?field=${field}&order=${order}`,
     userComp.getUserToken(),
     FETCH_METHODS.get,
     null
@@ -43,7 +44,7 @@ export const getFilteredEvents = (title, field, order) =>
 
 export const getEventById = (id) =>
   getData(
-    `http://localhost:3000/event/get/id/${id}`,
+    `${API_URL}/event/get/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.get,
     null
@@ -51,7 +52,7 @@ export const getEventById = (id) =>
 
 export const getEventsByUserId = (id) =>
   getData(
-    `http://localhost:3000/event/get/user-id/${id}`,
+    `${API_URL}/event/get/user-id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.get,
     null
@@ -59,7 +60,7 @@ export const getEventsByUserId = (id) =>
 
 export const createEvent = (body) =>
   getData(
-    'http://localhost:3000/event/create/',
+    `${API_URL}/event/create/`,
     userComp.getUserToken(),
     FETCH_METHODS.post,
     body
@@ -67,7 +68,7 @@ export const createEvent = (body) =>
 
 export const updateEventById = (id, body) =>
   getData(
-    `http://localhost:3000/event/update/id/${id}`,
+    `${API_URL}/event/update/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.put,
     body
@@ -75,7 +76,7 @@ export const updateEventById = (id, body) =>
 
 export const attendEventById = (id) =>
   getData(
-    `http://localhost:3000/event/attend/id/${id}`,
+    `${API_URL}/event/attend/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.put,
     null
@@ -83,7 +84,7 @@ export const attendEventById = (id) =>
 
 export const unattendEventById = (id) =>
   getData(
-    `http://localhost:3000/event/unattend/id/${id}`,
+    `${API_URL}/event/unattend/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.put,
     null
@@ -91,7 +92,7 @@ export const unattendEventById = (id) =>
 
 export const deleteEventById = (id) =>
   getData(
-    `http://localhost:3000/event/delete/id/${id}`,
+    `${API_URL}/event/delete/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.delete,
     null
@@ -99,7 +100,7 @@ export const deleteEventById = (id) =>
 
 export const getAllUsers = () =>
   getData(
-    'http://localhost:3000/user/get/all/',
+    `${API_URL}/user/get/all/`,
     userComp.getUserToken(),
     FETCH_METHODS.get,
     null
@@ -107,18 +108,18 @@ export const getAllUsers = () =>
 
 export const getUserById = (id) =>
   getData(
-    `http://localhost:3000/user/get/id/${id}`,
+    `${API_URL}/user/get/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.get,
     null
   )
 
 export const loginUser = (body) =>
-  getData('http://localhost:3000/user/login/', null, FETCH_METHODS.post, body)
+  getData(`${API_URL}/user/login/`, null, FETCH_METHODS.post, body)
 
 export const createUser = (body) =>
   getData(
-    'http://localhost:3000/user/create/',
+    `${API_URL}/user/create/`,
     userComp.getUserToken(),
     FETCH_METHODS.post,
     body
@@ -126,7 +127,7 @@ export const createUser = (body) =>
 
 export const updateUserById = (id, body) =>
   getData(
-    `http://localhost:3000/user/update/id/${id}`,
+    `${API_URL}/user/update/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.put,
     body
@@ -134,7 +135,7 @@ export const updateUserById = (id, body) =>
 
 export const deleteUserById = (id) =>
   getData(
-    `http://localhost:3000/user/delete/id/${id}`,
+    `${API_URL}/user/delete/id/${id}`,
     userComp.getUserToken(),
     FETCH_METHODS.delete,
     null
