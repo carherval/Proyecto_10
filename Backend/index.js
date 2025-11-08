@@ -12,8 +12,16 @@ const { connectToCloudinary } = require('./src/config/cloudinary')
 meetings.use(express.json())
 // Interpreta las solicitudes HTTP a través del "req.body" de las rutas
 meetings.use(express.urlencoded({ extended: false }))
+// Se suprimen "logs" innecesarios
+require('dotenv').config({ quiet: true })
 // Permite al "backend" aceptar solicitudes del "frontend" cuando son dominios diferentes
-meetings.use(require('cors')())
+meetings.use(
+  require('cors')({
+    origin: process.env.FRONT_URL,
+    methods: ['GET', 'DELETE', 'POST', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
 
 meetings.use('/event', eventRouter)
 meetings.use('/user', userRouter)
@@ -41,7 +49,7 @@ meetings.use((error, req, res, next) => {
 })
 
 meetings.listen(PORT, async () => {
-  console.log(`Servidor express ejecutándose en "http://localhost:${PORT}"`)
+  console.log(`Servidor express ejecutándose`)
 
   await connectToDataBase()
   connectToCloudinary()
